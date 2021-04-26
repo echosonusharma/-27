@@ -55,6 +55,7 @@ const serialKillerList = async () => {
     // console.log('once');
 }
 
-// setInterval(serialKillerList, 2 * 60 * 1000);
+// setInterval(serialKillerList, 7 * 24 * 60 * 60 * 1000);
+// such that the function run once every week
 
 serialKillerList();

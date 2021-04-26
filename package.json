@@ -12,9 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.6",
-    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-rate-limit": "^5.2.6",
+    "express-slow-down": "^1.4.0",
     "helmet": "^4.5.0",
+    "mongoose": "^5.12.5",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1"
   },
