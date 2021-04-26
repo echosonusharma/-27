@@ -20,7 +20,7 @@ const getData = async (event) => {
     }
     const result = await x.json();
     if (result.url) {
-        res.innerText = `http://localhost:8000/${result.url}`
+        res.innerText = `https://x-27.herokuapp.com/${result.url}`
     }
     if (result.msg) {
         res.innerText = `${result.msg}`
