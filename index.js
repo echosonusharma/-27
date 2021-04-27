@@ -55,11 +55,11 @@ app.get('/:id', async (req, res) => {
 
 app.post('/url', slowDown({
     windowMs: 30 * 1000,
-    delayAfter: 10,
-    delayMs: 3000,
+    delayAfter: 1,
+    delayMs: 5000,
 }), rateLimit({
     windowMs: 30 * 1000,
-    max: 10,
+    max: 2,
 }), async (req, res, next) => {
     const { url } = req.body;
     const valid = /^(http|https):\/\/[^ "]+$/.test(url);
