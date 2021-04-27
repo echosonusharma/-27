@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const slowDown = require('express-slow-down');
 const Slug = require('./slug');
+const { stringify } = require('querystring');
 require('dotenv').config();
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -24,15 +25,19 @@ app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
-let people = [];
+
+let readList = new Array;
 
 let slugCounter = -1;
 
+//read and covert killer.txt to an array
 const list = fs.readFileSync('./Killers.txt').toString().split("\n");
 list.map((killer) => {
-    people.push(killer.toLocaleLowerCase());
+    readList.push(killer.toLocaleLowerCase());
 });
 
+//remove duplicates
+const people = [...new Set(readList)];
 
 app.get('/:id', async (req, res) => {
     const { id: slug } = req.params;
@@ -50,27 +55,39 @@ app.get('/:id', async (req, res) => {
 
 app.post('/url', slowDown({
     windowMs: 30 * 1000,
-    delayAfter: 1,
+    delayAfter: 10,
     delayMs: 3000,
 }), rateLimit({
     windowMs: 30 * 1000,
-    max: 2,
+    max: 10,
 }), async (req, res, next) => {
     const { url } = req.body;
     const valid = /^(http|https):\/\/[^ "]+$/.test(url);
+
     try {
         if (valid) {
-            if (url.includes('localhost')) {
+            if (url.includes('x-27.herokuapp')) {
                 return res.json({ msg: 'Stop it. 🛑' });
             };
             if (slugCounter <= people.length) {
-                let slugName = new String;
-                people.map((person, index) => {
-                    index === slugCounter + 1 && (slugName = person);
+                let lastEntry = new String;
+                await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
+                    try {
+                        lastEntry = latestSlug === null ? '' : latestSlug.slug
+                    } catch (err) {
+                        console.log(err)
+                    }
                 });
-                slugCounter += 1;
+
+                const i = lastEntry === '' ? 0 : people.indexOf(lastEntry) + 1;
+
+                let currentSlug = new String;
+                people.map((person, index) => {
+                    index === i && (currentSlug = person)
+                });
+
                 const slugUrl = await Slug.create({
-                    slug: slugName,
+                    slug: currentSlug,
                     redirect: url
                 });
 

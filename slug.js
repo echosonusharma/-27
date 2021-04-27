@@ -10,7 +10,7 @@ const slugSchema = new Schema({
         type: String,
         required: true
     }
-});
+}, { timestamps: { createdAt: 'created_at' } });
 
 const Slug = mongoose.model('SlugStore', slugSchema);
 module.exports = Slug;
