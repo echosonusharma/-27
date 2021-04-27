@@ -25,7 +25,6 @@ app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
-
 let readList = new Array;
 
 let slugCounter = -1;
@@ -61,16 +60,6 @@ app.post('/url', slowDown({
     windowMs: 30 * 1000,
     max: 2,
 }), async (req, res, next) => {
-
-    let lastEntry = new String;
-    await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
-        try {
-            lastEntry = latestSlug === null ? '' : latestSlug.slug
-        } catch (err) {
-            console.log(err)
-        }
-    });
-
     const { url } = req.body;
     const valid = /^(http|https):\/\/[^ "]+$/.test(url);
 
@@ -81,12 +70,21 @@ app.post('/url', slowDown({
             };
             if (slugCounter <= people.length) {
 
-                const i = lastEntry === '' ? 0 : people.indexOf(lastEntry) + 1;
-
+                let lastEntry = new String;
                 let currentSlug = new String;
-                people.map((person, index) => {
-                    index === i && (currentSlug = person)
+
+                await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
+                    try {
+                        lastEntry = latestSlug === null ? '' : latestSlug.slug;
+                        const i = lastEntry === '' ? 0 : people.indexOf(lastEntry) + 1;
+                        people.map((person, index) => {
+                            index === i && (currentSlug = person)
+                        });
+                    } catch (err) {
+                        console.log(err)
+                    }
                 });
+
 
                 const slugUrl = await Slug.create({
                     slug: currentSlug,
