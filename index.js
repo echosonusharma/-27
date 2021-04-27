@@ -69,16 +69,13 @@ app.post('/url', slowDown({
                 return res.json({ msg: 'Stop it. 🛑' });
             };
             if (slugCounter <= people.length) {
-
-                let lastEntry = new String;
                 let currentSlug = new String;
 
                 await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
                     try {
-                        lastEntry = latestSlug === null ? '' : latestSlug.slug;
-                        const i = lastEntry === '' ? 0 : people.indexOf(lastEntry) + 1;
+                        const i = latestSlug === null ? 0 : people.indexOf(latestSlug.slug) + 1;
                         people.map((person, index) => {
-                            index === i && (currentSlug = person)
+                            index === i && (currentSlug = person);
                         });
                     } catch (err) {
                         console.log(err)
@@ -98,7 +95,7 @@ app.post('/url', slowDown({
                         });
                     }).catch((err) => {
                         return res.json({
-                            msg: 'fucked'
+                            msg: '😅 failed to save'
                         })
                     });
             } else {
