@@ -61,6 +61,16 @@ app.post('/url', slowDown({
     windowMs: 30 * 1000,
     max: 2,
 }), async (req, res, next) => {
+
+    let lastEntry = new String;
+    await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
+        try {
+            lastEntry = latestSlug === null ? '' : latestSlug.slug
+        } catch (err) {
+            console.log(err)
+        }
+    });
+
     const { url } = req.body;
     const valid = /^(http|https):\/\/[^ "]+$/.test(url);
 
@@ -70,14 +80,6 @@ app.post('/url', slowDown({
                 return res.json({ msg: 'Stop it. 🛑' });
             };
             if (slugCounter <= people.length) {
-                let lastEntry = new String;
-                await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
-                    try {
-                        lastEntry = latestSlug === null ? '' : latestSlug.slug
-                    } catch (err) {
-                        console.log(err)
-                    }
-                });
 
                 const i = lastEntry === '' ? 0 : people.indexOf(lastEntry) + 1;
 
