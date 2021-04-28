@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const slowDown = require('express-slow-down');
 const Slug = require('./slug');
-const { stringify } = require('querystring');
 require('dotenv').config();
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -26,8 +25,6 @@ app.use(express.static('./public'));
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
 let readList = new Array;
-
-let slugCounter = -1;
 
 //read and covert killer.txt to an array
 const list = fs.readFileSync('./Killers.txt').toString().split("\n");
@@ -63,12 +60,22 @@ app.post('/url', slowDown({
     const { url } = req.body;
     const valid = /^(http|https):\/\/[^ "]+$/.test(url);
 
+    let docNumber = new Number;
+
+    await Slug.count({}, function (err, count) {
+        try {
+            docNumber = count;
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
     try {
         if (valid) {
             if (url.includes('x-27.herokuapp')) {
                 return res.json({ msg: 'Stop it. 🛑' });
             };
-            if (slugCounter <= people.length) {
+            if (docNumber <= people.length) {
                 let currentSlug = new String;
 
                 await Slug.findOne({}, {}, { sort: { 'created_at': -1 } }, function (err, latestSlug) {
@@ -82,7 +89,6 @@ app.post('/url', slowDown({
                     }
                 });
 
-
                 const slugUrl = await Slug.create({
                     slug: currentSlug,
                     redirect: url
@@ -95,7 +101,7 @@ app.post('/url', slowDown({
                         });
                     }).catch((err) => {
                         return res.json({
-                            msg: '😅 failed to save'
+                            msg: process.env.NODE_ENV === 'production' ? '😅 failed to save' : err
                         })
                     });
             } else {
